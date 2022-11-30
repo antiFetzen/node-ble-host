@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { BleAddress } from '../../types/Ble'
 
 const BASE_UUID_SECOND_PART = '-0000-1000-8000-00805F9B34FB'
 
@@ -67,6 +68,7 @@ export interface CacheNode {
 	prev: CacheNode | null
 }
 
+// TODO: define template for Class
 export class DuplicateCache extends EventEmitter {
 	first: CacheNode | null
 	last: CacheNode | null
@@ -170,7 +172,7 @@ export function isValidBdAddr(bdAddr: string): boolean {
 	return typeof bdAddr === 'string' && /^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/.test(bdAddr)
 }
 
-export function bdAddrToBuffer(address: string): Buffer {
+export function bdAddrToBuffer(address: BleAddress): Buffer {
 	const buf = []
 	for (let i = 15; i >= 0; i -= 3) {
 		buf.push(parseInt(address.substr(i, 2), 16))

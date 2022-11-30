@@ -1,9 +1,9 @@
-export enum BleAddressTypes {
+export enum BleAddressType {
   PUBLIC= 'public',
   RANDOM = 'random',
 }
 
-export enum BleAddressTypesValue {
+export enum BleAddressTypeRaw {
   PUBLIC_VALUE = 0,
   RANDOM_VALUE = 1,
 }

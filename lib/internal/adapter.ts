@@ -6,8 +6,9 @@
 
 import HciErrors from '../hci-errors'
 import { Queue } from './utils'
-import { BleAddressTypesValue } from '../../types/BleAddressTypes'
+import { BleAddressTypeRaw } from '../../types/BleAddressType'
 import { EventEmitter } from 'events'
+import { BleAddress } from '../../types/Ble'
 
 
 enum HciPackage {
@@ -186,7 +187,7 @@ class PacketWriter {
 		return this
 	}
 
-	bdAddr(value: string): PacketWriter {
+	bdAddr(value: BleAddress): PacketWriter {
 		for (let i = 15; i >= 0; i -= 3) {
 			this.buf.push(parseInt(value.substr(i, 2), 16))
 		}
@@ -252,7 +253,7 @@ class PacketReader {
 		return value
 	}
 
-	bdAddr(): string {
+	bdAddr(): BleAddress {
 		if (this.pos + 6 > this.buf.length) this.throwFn()
 
 		let str = ''
@@ -358,8 +359,8 @@ type HciAdapterConnectionCallback = (
 	status: number,
 	aclConn?: AclConnection,
 	role?: BleRole,
-	peerAddressType?: BleAddressTypesValue,
-	peerAddress?: string,
+	peerAddressType?: BleAddressTypeRaw,
+	peerAddress?: BleAddress,
 	connInterval?: number,
 	connLatency?: number,
 	supervisionTimeout?: number,
@@ -371,23 +372,23 @@ type HciAdapterHardwareErrorCallback = (hardwareCode: number) => void
 // TODO: check if working same callback for two different callbacks
 // handleLeAdvertisingReport()
 // scanCallback(eventType, addressType, address, data, rssi)
-type HciAdapterLeAdvertisingReportCallback = (eventType: number, addressType?: BleAddressTypesValue, address?: string, data?: Buffer, rssi?: number) => void
+type HciAdapterLeAdvertisingReportCallback = (eventType: number, addressType?: BleAddressTypeRaw, address?: BleAddress, data?: Buffer, rssi?: number) => void
 
 // TODO: check if working same callback for two different callbacks
 // handleLeExtendedAdvertisingReport()
 // scanCallback(eventType, addressType, address, primaryPhy, secondaryPhy, advertisingSid, txPower, rssi, periodicAdvertisingInterval, directAddressType, directAddress, data)
 type HciAdapterLeExtendedAdvertisingReportCallback = (
 	eventType: number,
-	addressType?: BleAddressTypesValue,
-	address?: string,
+	addressType?: BleAddressTypeRaw,
+	address?: BleAddress,
 	primaryPhy?: number,
 	secondaryPhy?: number,
 	advertisingSid?: number,
 	txPower?: number,
 	rssi?: number,
 	periodicAdvertisingInterval?: number,
-	directAddressType?: BleAddressTypesValue,
-	directAddress?: string,
+	directAddressType?: BleAddressTypeRaw,
+	directAddress?: BleAddress,
 	data?: Buffer
 ) => void
 
@@ -664,7 +665,7 @@ class HciAdapter {
 		})
 	}
 
-	leSetRandomAddress(randomAddress: string, callback: HciAdapterSendCommandCallback): void {
+	leSetRandomAddress(randomAddress: BleAddress, callback: HciAdapterSendCommandCallback): void {
 		this.sendCommand(HciCommands.LE_SET_RANDOM_ADDRESS, new PacketWriter().bdAddr(randomAddress).toBuffer(), callback)
 	}
 
@@ -672,9 +673,9 @@ class HciAdapter {
 		advertisingIntervalMin: number,
 		advertisingIntervalMax: number,
 		advertisingType: BleAdvertisingType,
-		ownAddressType: BleAddressTypesValue,
-		peerAddressType: BleAddressTypesValue,
-		peerAddress: string,
+		ownAddressType: BleAddressTypeRaw,
+		peerAddressType: BleAddressTypeRaw,
+		peerAddress: BleAddress,
 		advertisingChannelMap: number,
 		advertisingFilterPolicy: number,
 		callback: HciAdapterSendCommandCallback
@@ -729,7 +730,7 @@ class HciAdapter {
 		})
 	}
 
-	leSetScanParameters(leScanType: number, leScanInterval: number, leScanWindow: number, ownAddressType: BleAddressTypesValue, scanningFilterPolicy: number, callback: HciAdapterSendCommandCallback): void {
+	leSetScanParameters(leScanType: number, leScanInterval: number, leScanWindow: number, ownAddressType: BleAddressTypeRaw, scanningFilterPolicy: number, callback: HciAdapterSendCommandCallback): void {
 		const pkt = new PacketWriter()
 			.u8(leScanType)
 			.u16(leScanInterval)
@@ -755,7 +756,7 @@ class HciAdapter {
 		})
 	}
 
-	leCreateConnection(leScanInterval: number, leScanWindow: number, initiatorFilterPolicy: number, peerAddressType: BleAddressTypesValue, peerAddress: string, ownAddressType: BleAddressTypesValue, connIntervalMin: number, connIntervalMax: number, connLatency: number, supervisionTimeout: number, minCELen: number, maxCELen: number, callback: (status: number) => void, completeCallback: HciAdapterConnectionCallback): void {
+	leCreateConnection(leScanInterval: number, leScanWindow: number, initiatorFilterPolicy: number, peerAddressType: BleAddressTypeRaw, peerAddress: BleAddress, ownAddressType: BleAddressTypeRaw, connIntervalMin: number, connIntervalMax: number, connLatency: number, supervisionTimeout: number, minCELen: number, maxCELen: number, callback: (status: number) => void, completeCallback: HciAdapterConnectionCallback): void {
 		const pkt = new PacketWriter()
 			.u16(leScanInterval)
 			.u16(leScanWindow)
@@ -799,11 +800,11 @@ class HciAdapter {
 		this.sendCommand(HciCommands.LE_CLEAR_WHITE_LIST, EMPTY_BUFFER, callback)
 	}
 
-	leAddDeviceToWhiteList(addressType: BleAddressTypesValue, address: string, callback: HciAdapterSendCommandCallback): void {
+	leAddDeviceToWhiteList(addressType: BleAddressTypeRaw, address: BleAddress, callback: HciAdapterSendCommandCallback): void {
 		this.sendCommand(HciCommands.LE_ADD_DEVICE_TO_WHITE_LIST, new PacketWriter().u8(addressType).bdAddr(address).toBuffer(), callback)
 	}
 
-	leRemoveDeviceFromWhiteList(addressType: BleAddressTypesValue, address: string, callback: HciAdapterSendCommandCallback): void {
+	leRemoveDeviceFromWhiteList(addressType: BleAddressTypeRaw, address: BleAddress, callback: HciAdapterSendCommandCallback): void {
 		this.sendCommand(HciCommands.LE_REMOVE_DEVICE_FROM_WHITE_LIST, new PacketWriter().u8(addressType).bdAddr(address).toBuffer(), callback)
 	}
 
@@ -954,7 +955,7 @@ class HciAdapter {
 		})
 	}
 
-	leSetExtendedScanParameters(ownAddressType: BleAddressTypesValue, scanningFilterPolicy: number, scanningPhys: number, phyArr: BlePhy[], callback:HciAdapterSendCommandCallback): void {
+	leSetExtendedScanParameters(ownAddressType: BleAddressTypeRaw, scanningFilterPolicy: number, scanningPhys: number, phyArr: BlePhy[], callback:HciAdapterSendCommandCallback): void {
 		const writer = new PacketWriter()
 			.u8(ownAddressType)
 			.u8(scanningFilterPolicy)
@@ -992,7 +993,7 @@ class HciAdapter {
 		})
 	}
 
-	leExtendedCreateConnection(initiatorFilterPolicy: number, ownAddressType: BleAddressTypesValue, peerAddressType: BleAddressTypesValue, peerAddress: string, initiatingPhys: number, phyArr: BlePhy[], callback: (status: number) => void, completeCallback:  HciAdapterConnectionCallback): void {
+	leExtendedCreateConnection(initiatorFilterPolicy: number, ownAddressType: BleAddressTypeRaw, peerAddressType: BleAddressTypeRaw, peerAddress: BleAddress, initiatingPhys: number, phyArr: BlePhy[], callback: (status: number) => void, completeCallback:  HciAdapterConnectionCallback): void {
 		const writer = new PacketWriter()
 			.u8(initiatorFilterPolicy)
 			.u8(ownAddressType)
@@ -1025,7 +1026,7 @@ class HciAdapter {
 		})
 	}
 
-	leSetExtendedAdvertisingParameters(advertisingHandle: number, advertisingEventProperties: number, primaryAdvertisingIntervalMin: number, primaryAdvertisingIntervalMax: number, primaryAdvertisingChannelMap: number, ownAddressType: BleAddressTypesValue, peerAddressType: BleAddressTypesValue, peerAddress: string, advertisingFilterPolicy: number, advertisingTxPower: number, primaryAdvertisingPhy: number, secondaryAdvertisingMaxSkip: number, secondaryAdvertisingPhy: number, advertisingSid: number, scanRequestNotificationEnable: number, callback: (status: number, selectedTxPower?: number) => void): void {
+	leSetExtendedAdvertisingParameters(advertisingHandle: number, advertisingEventProperties: number, primaryAdvertisingIntervalMin: number, primaryAdvertisingIntervalMax: number, primaryAdvertisingChannelMap: number, ownAddressType: BleAddressTypeRaw, peerAddressType: BleAddressTypeRaw, peerAddress: BleAddress, advertisingFilterPolicy: number, advertisingTxPower: number, primaryAdvertisingPhy: number, secondaryAdvertisingMaxSkip: number, secondaryAdvertisingPhy: number, advertisingSid: number, scanRequestNotificationEnable: number, callback: (status: number, selectedTxPower?: number) => void): void {
 		const pkt = new PacketWriter()
 			.u8(advertisingHandle)
 			.u16(advertisingEventProperties)

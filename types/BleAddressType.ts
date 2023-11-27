@@ -4,6 +4,6 @@ export enum BleAddressType {
 }
 
 export enum BleAddressTypeRaw {
-  PUBLIC_VALUE = 0,
-  RANDOM_VALUE = 1,
+  PUBLIC = 0,
+  RANDOM = 1,
 }

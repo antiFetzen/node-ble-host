@@ -5,6 +5,10 @@
 	"optionalDependencies": {
 		"hci-socket": "^1.0.0"
 	},
+	"devDependencies": {
+		"@types/node": "^18.11.9",
+		"typescript": "^2.8.3"
+	},
 	"main": "./lib/index.js",
 	"repository": "github:Emill/node-ble-host",
 	"homepage": "https://github.com/Emill/node-ble-host",
